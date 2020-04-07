@@ -8,6 +8,8 @@
 #
 
 library(shiny)
+library(ggplot2)
+library(tidyr)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -61,8 +63,8 @@ server <- function(input, output) {
         y1<- x*input$b1+input$a1
         y2<- 1/(1+exp(-input$a2+input$b2*x))
         
+        #Create a data frame and tidy it  
         df1<-data.frame(x,y1,y2)
-
         df2<-gather(df1,key=type,value=value,y1,y2)
        
         ggplot(df2,aes(y = value,x = x,color = type)) + 
