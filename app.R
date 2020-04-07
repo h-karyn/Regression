@@ -69,7 +69,7 @@ server <- function(input, output) {
        
         ggplot(df2,aes(y = value,x = x,color = type)) + 
             geom_line() +
-            coord_cartesian(xlim = c(-3,3),ylim=c(-1,2))+
+            coord_cartesian(xlim = c(-3,3),ylim=c(-0.5,1.5))+
             scale_color_discrete(name = "Function", labels = c("y=a1+b1*x", "y=1/(exp(a2+b2*x))"))+
             labs(x="X", y="Y")
             
