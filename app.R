@@ -10,6 +10,7 @@
 library(shiny)
 library(ggplot2)
 library(tidyr)
+library(plotly)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -45,44 +46,55 @@ ui <- fluidPage(
                         min = -3,
                         max = 3,
                         value = 0,
+                        step = 0.1),
+            sliderInput("size",
+                        "Select the sample size",
+                        min = 5,
+                        max = 20,
+                        value = 5,
+                        step = 1),
+            sliderInput("sd",
+                        "Select the standard deviation",
+                        min = 0.1,
+                        max = 2.0,
+                        value = 0.1,
                         step = 0.1)
         ),
             # Show a plot of the generated distribution
             mainPanel(
-                plotOutput("linePlot"),
+                plotlyOutput("linePlot"),
             )
         )
     )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    output$linePlot <- renderPlot({
+    output$linePlot <- renderPlotly({
         
         x<- seq(-10,10,0.1)
-        
         y1<- x*input$b1+input$a1
-        y2<- 1/(1+exp(-input$a2+input$b2*x))
-        
-        #Create a data frame and tidy it  
+        y2<- 1/(1+exp(-input$a2-input$b2*x))
+        #data frame for the line plot 
         df1<-data.frame(x,y1,y2)
-        df2<-gather(df1,key=type,value=value,y1,y2)
-       
-        ggplot(df2,aes(y = value,x = x,color = type)) + 
-            geom_line() +
-            coord_cartesian(xlim = c(-3,3),ylim=c(-0.5,1.5))+
-            scale_color_discrete(name = "Function", labels = c("y=a1+b1*x", "y=1/(exp(a2+b2*x))"))+
-            labs(x="X", y="Y")
-            
+    
+        random_x<- round(runif(input$size,min=-10, max=10),1)
+        random_num<- round((rnorm(input$size, mean=0, sd=input$sd)),1)
+        y1_data<- random_num+random_x*input$b1+input$a1
+        y2_data<- 1/(1+exp(random_num-input$a2-input$b2*random_x))
+        #data frame for the scatter plot 
+        df2<-data.frame(random_x,y1_data,y2_data)
         
+        #merging two data frames
+        df3<-merge(df1, df2, by.x = "x", by.y = "random_x", all.x = TRUE,all.y = TRUE)
         
-        ### The current codes which use gather() seems tedious, 
-        ### but I am not sure why the following code is problematic 
+        #plot 
+        p<-plot_ly(df3)%>%
+            add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y=a1+b1*x",line = list(color = 'rgb(255, 129, 10)')) %>% 
+            add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
+            add_trace(x=random_x,y= y1_data, name = 'y1_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)')) %>%
+            add_trace(x=random_x,y= y2_data, name = 'y2_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))
         
-        # data<-data.frame(x,y1,y2)
-        # ggplot() + 
-        # geom_line(data, aes(x = x, y = y1), color = "blue") +
-        # geom_line(data, aes(x = x, y = y2), color = "red") 
-        
+        p
     })
 }
 
