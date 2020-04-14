@@ -52,8 +52,14 @@ ui <- fluidPage(
                         max = 20,
                         value = 5,
                         step = 1),
-            sliderInput("sd",
-                        "Select the standard deviation",
+            sliderInput("sd1",
+                        "Select the standard deviation for y1_data",
+                        min = 0.1,
+                        max = 2.0,
+                        value = 0.1,
+                        step = 0.1),
+            sliderInput("sd2",
+                        "Select the standard deviation for y1_data",
                         min = 0.1,
                         max = 2.0,
                         value = 0.1,
@@ -77,9 +83,10 @@ server <- function(input, output) {
         df1<-data.frame(x,y1,y2)
     
         random_x<- round(runif(input$size,min=-10, max=10),1)
-        random_num<- round((rnorm(input$size, mean=0, sd=input$sd)),1)
-        y1_data<- random_num+random_x*input$b1+input$a1
-        y2_data<- 1/(1+exp(random_num-input$a2-input$b2*random_x))
+        random_num1<- round((rnorm(input$size, mean=0, sd=input$sd1)),1)
+        random_num2<- round((rnorm(input$size, mean=0, sd=input$sd1)),1)
+        y1_data<- random_num1+random_x*input$b1+input$a1
+        y2_data<- 1/(1+exp(random_num2-input$a2-input$b2*random_x))
         #data frame for the scatter plot 
         df2<-data.frame(random_x,y1_data,y2_data)
         
