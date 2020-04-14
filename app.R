@@ -59,7 +59,7 @@ ui <- fluidPage(
                         value = 0.1,
                         step = 0.1),
             sliderInput("sd2",
-                        "Select the standard deviation for y1_data",
+                        "Select the standard deviation for y2_data",
                         min = 0.1,
                         max = 2.0,
                         value = 0.1,
@@ -84,7 +84,7 @@ server <- function(input, output) {
     
         random_x<- round(runif(input$size,min=-10, max=10),1)
         random_num1<- round((rnorm(input$size, mean=0, sd=input$sd1)),1)
-        random_num2<- round((rnorm(input$size, mean=0, sd=input$sd1)),1)
+        random_num2<- round((rnorm(input$size, mean=0, sd=input$sd2)),1)
         y1_data<- random_num1+random_x*input$b1+input$a1
         y2_data<- 1/(1+exp(random_num2-input$a2-input$b2*random_x))
         #data frame for the scatter plot 
@@ -95,8 +95,8 @@ server <- function(input, output) {
         
         #plot 
         p<-plot_ly(df3)%>%
-            add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y=a1+b1*x",line = list(color = 'rgb(255, 129, 10)')) %>% 
-            add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
+            add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)')) %>% 
+            add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y2=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
             add_trace(x=random_x,y= y1_data, name = 'y1_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)')) %>%
             add_trace(x=random_x,y= y2_data, name = 'y2_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))
         
