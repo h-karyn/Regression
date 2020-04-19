@@ -15,7 +15,7 @@ library(plotly)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Simple Line Plot"),
+    titlePanel("Regression Line Simulator"),
 
     # Sidebar with four slider inputs for a1, a2, b1, b2
     sidebarLayout(
@@ -63,7 +63,9 @@ ui <- fluidPage(
                         min = 0.1,
                         max = 2.0,
                         value = 0.1,
-                        step = 0.1)
+                        step = 0.1),
+            actionButton("simulate", "Simulate!"),
+            actionButton("clear", "Clear")
         ),
             # Show a plot of the generated distribution
             mainPanel(
@@ -81,12 +83,13 @@ server <- function(input, output) {
         y2<- 1/(1+exp(-input$a2-input$b2*x))
         #data frame for the line plot 
         df1<-data.frame(x,y1,y2)
-    
-        random_x<- round(runif(input$size,min=-10, max=10),1)
-        random_num1<- round((rnorm(input$size, mean=0, sd=input$sd1)),1)
-        random_num2<- round((rnorm(input$size, mean=0, sd=input$sd2)),1)
-        y1_data<- random_num1+random_x*input$b1+input$a1
-        y2_data<- 1/(1+exp(random_num2-input$a2-input$b2*random_x))
+        
+        random_x<- rnorm(input$size,mean = 0, 3)
+        random_num1<- rnorm(input$size, mean=0, sd=input$sd1)
+        random_num2<- rnorm(input$size, mean=0, sd=input$sd2)
+
+        y1_data<- random_num1 + random_x*input$b1+input$a1
+        y2_data<- 1/(1+exp(random_num2-input$a2-input$b2 * random_x))
         #data frame for the scatter plot 
         df2<-data.frame(random_x,y1_data,y2_data)
         
@@ -97,8 +100,11 @@ server <- function(input, output) {
         p<-plot_ly(df3)%>%
             add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)')) %>% 
             add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y2=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
-            add_trace(x=random_x,y= y1_data, name = 'y1_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)')) %>%
-            add_trace(x=random_x,y= y2_data, name = 'y2_data',type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))
+            add_trace(x=round(random_x,4),y= round(y1_data,4), name = 'y1_data',
+                      type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)')) %>%
+            add_trace(x=round(random_x,4),y= round(y2_data,4), name = 'y2_data',
+                      type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))%>%
+            layout(xaxis = list(range=c(-10,10)), yaxis = list(range=c(-32,32)))
         
         p
     })
