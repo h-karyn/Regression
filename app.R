@@ -47,7 +47,7 @@ ui <- fluidPage(
                 
             conditionalPanel(
                 condition = "input.simple==true||input.logistic==true",
-                sliderInput("size", "Select the sample size",min = 5,max = 20,value = NULL,step = 1),
+                sliderInput("size", "Select the sample size",min = 5,max = 10000,value = NULL,step = 1),
                 actionButton("simulate", "Simulate!"),
                 actionButton("clear", "Clear"))
             
@@ -194,6 +194,7 @@ server <- function(input, output) {
     # })
 }
 
+<<<<<<< Updated upstream
 #-----------------------------------Using plotlyProxy----------------------------------------------------
 # server <- function(input, output) {
 #     
@@ -403,5 +404,7 @@ server <- function(input, output) {
 
 
 
+=======
+>>>>>>> Stashed changes
 # Run the application 
 shinyApp(ui = ui, server = server)
