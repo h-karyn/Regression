@@ -22,10 +22,7 @@ ui <- fluidPage(
     # Sidebar with four slider inputs for a1, a2, b1, b2
     sidebarLayout(
         sidebarPanel(
-            # checkboxGroupInput("regression", label = "Type of regression", 
-            #                    choices = list("Simple Linear" = 1, "Logistic" = 2),
-            #                    selected = c(1,2)),
-            # 
+
             checkboxInput("simple","Simple Regression", value = TRUE),
             checkboxInput("logistic", "Logistic Regression", value = TRUE),
             helpText("Select values on the sliders"),
@@ -47,7 +44,8 @@ ui <- fluidPage(
                 
             conditionalPanel(
                 condition = "input.simple==true||input.logistic==true",
-                sliderInput("size", "Select the sample size",min = 5,max = 10000,value = NULL,step = 1),
+                sliderInput("size", "Select the sample size using the slider or enter the value in the textbox",min = 5,max = 10000,value = NULL,step = 1),
+                textInput('txt',label = NULL,value=5),
                 actionButton("simulate", "Simulate!"),
                 actionButton("clear", "Clear"))
             
@@ -59,42 +57,27 @@ ui <- fluidPage(
         )
     )
 
-# #regression line 
-# x<- seq(-10,10,0.1)
-# y1<- reactive({x*input$b1+input$a1})
-# y2<- reactive({1/(1+exp(-input$a2-input$b2*x))})
-# 
-# #simulation data
-# # size <- reactive({input$size})  
-# # sd1 <- reactive({input$sd1})  
-# # sd2 <- reactive({input$sd2})  
-# 
-# random_x<- reactive({rnorm(input$size,mean = 0, 3)})
-# #random_num1<- reactive({rnorm(input$size, mean=0, sd=input$sd1)})
-# #random_num2<- reactive({rnorm(input$size, mean=0, sd=input$sd2)})
-# # 
-# y1_data<- reactive({rnorm(input$size, mean=0, sd=input$sd1) + random_x*input$b1+input$a1})
-# y2_data<- reactive({1/(1+exp(rnorm(input$size, mean=0, sd=input$sd2)-input$a2-input$b2 * random_x))})
+server <- function(input, output,session) {
+    
+    observeEvent(input$txt, {
+        print(input$txt)
+        if ((as.numeric(input$txt) != input$size) & input$txt != "" &  input$size != ""){
+                updateSliderInput(session = session, inputId = 'size',value = input$txt)
+        } else {
+            if (input$txt == "") {
+                updateSliderInput(session = session,inputId = 'size',value = 5)
+            }
+        }
+    })
 
-
-# if (input$logistic){
-#     p<-p%>%
-#         add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y2=1/(exp(-a2-b2*x))", 
-#                   line = list(color = 'rgb(22, 96, 167)'))
-#         
-# }
-# 
-# if (input$simple){
-#     p<-p%>%
-#         add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)'))
-# }
-# 
-# p
-
-server <- function(input, output) {
+    observeEvent(input$size, {
+        if ((as.numeric(input$txt) != input$size) & input$size != "" & input$txt != ""){
+            updateTextInput(session = session,inputId = 'txt',value = input$size
+            )
+        }
+    })
     
     v <- reactiveValues(data = NULL)
-    
 
     observeEvent(input$simulate, {
 
@@ -110,26 +93,25 @@ server <- function(input, output) {
         y1<- x*input$b1+input$a1
         y2<- 1/(1+exp(-input$a2-input$b2*x))
         
+        
         #plot
         p<-plot_ly()%>%
             layout(xaxis = list(range=c(-10,10)), yaxis = list(range=c(-32,32)))
         
         if (input$simple){
             p<-p%>%
-                add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)'))%>%
-                add_trace(x=round(random_x,4),y= round(y1_data,4), name = 'y1_data',
+                add_trace(x=x,y=y1,type = 'scatter',mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)'))%>%
+                add_trace(x=round(random_x,4),y= round(y1_data,4),name = 'y1_data',
                           type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)'))
             }
 
         if (input$logistic) {
             p<-p%>%
                 add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y2=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
-                add_trace(x=round(random_x,4),y= round(y2_data,4), name = 'y2_data',
+                add_trace(x=round(random_x,4),y= round(y2_data,4),name = 'y2_data',
                           type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))
         }
-        
-        #p 
-        
+
         v$data <- p
        
     })
@@ -156,9 +138,6 @@ server <- function(input, output) {
                 add_trace(x=x,y=y1,type = 'scatter', mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)'))
         }
         
-        
-        #p
-        
         v$data <- p
         
     })
@@ -167,8 +146,8 @@ server <- function(input, output) {
         if (is.null(v$data)) return()
         v$data
     })
-  
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
