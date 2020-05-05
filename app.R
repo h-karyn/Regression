@@ -12,7 +12,6 @@ library(tidyr)
 library(plotly)
 
 
-
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
@@ -59,10 +58,12 @@ ui <- fluidPage(
 
 server <- function(input, output,session) {
     
+    # textbox and slider sync for input$size 
     observeEvent(input$txt, {
         print(input$txt)
-        if ((as.numeric(input$txt) != input$size) & input$txt != "" &  input$size != ""){
-                updateSliderInput(session = session, inputId = 'size',value = input$txt)
+        if ((as.numeric(input$txt) != input$size) & input$txt != "" &  input$size != "") {
+                updateSliderInput(session = session, inputId = 'size',value = input$txt
+                                  )
         } else {
             if (input$txt == "") {
                 updateSliderInput(session = session,inputId = 'size',value = 5)
@@ -71,12 +72,37 @@ server <- function(input, output,session) {
     })
 
     observeEvent(input$size, {
-        if ((as.numeric(input$txt) != input$size) & input$size != "" & input$txt != ""){
+        if ((as.numeric(input$txt) != input$size) & input$size != "" & input$txt != "") {
             updateTextInput(session = session,inputId = 'txt',value = input$size
             )
         }
     })
     
+    
+    # o$data stores the the value for opacity 
+    o <- reactiveValues(data = NULL)
+    observe({
+        if (input$size < 100) {
+            o$data <- 1
+        } else if (input$size<500){
+            o$data <- .8
+        } else if (input$size<1000){
+            o$data <- .7
+        } else if (input$size<3000){
+            o$data <- .6
+        } else if (input$size<5000){
+            o$data <- .5
+        } else if (input$size<6000){
+            o$data <- .4
+        } else {
+            o$data <- .1
+        }
+        o$data
+        # print(o$data)
+    })
+    
+    
+    # v$data stores the plotly object 
     v <- reactiveValues(data = NULL)
 
     observeEvent(input$simulate, {
@@ -102,14 +128,14 @@ server <- function(input, output,session) {
             p<-p%>%
                 add_trace(x=x,y=y1,type = 'scatter',mode = 'lines', name = "y1=a1+b1*x",line = list(color = 'rgb(255, 129, 10)'))%>%
                 add_trace(x=round(random_x,4),y= round(y1_data,4),name = 'y1_data',
-                          type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(255, 129, 10)'))
+                          type = 'scatter',mode = 'markers', marker = list(opacity= o$data,size = 5, color ='rgb(255, 129, 10)'))
             }
 
         if (input$logistic) {
             p<-p%>%
                 add_trace(x=x,y=y2,type = 'scatter', mode = 'lines', name = "y2=1/(exp(-a2-b2*x))", line = list(color = 'rgb(22, 96, 167)'))%>%
-                add_trace(x=round(random_x,4),y= round(y2_data,4),name = 'y2_data',
-                          type = 'scatter',mode = 'markers',marker = list(size = 5, color ='rgb(22, 96, 167)'))
+                add_trace(x=round(random_x,4),y= round(y2_data,4), name = 'y2_data',
+                          type = 'scatter',mode = 'markers',marker = list(opacity= o$data,size = 5, color ='rgb(22, 96, 167)'))
         }
 
         v$data <- p
