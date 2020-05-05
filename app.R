@@ -10,6 +10,7 @@
 library(shiny)
 library(tidyr)
 library(plotly)
+library(shinycssloaders)
 
 
 # Define UI for application that draws a histogram
@@ -38,7 +39,6 @@ ui <- fluidPage(
                 sliderInput("a2", "Select value for a2",min = -0.8,max = 0.8,value = NULL,step = 0.1),
                 sliderInput("b2","Select value for b2",min = -3,max = 3,value = NULL,step = 0.1),
                 sliderInput("sd2","Select the standard deviation for y2_data",min = 0.1, max = 2.0,value = NULL,step = 0.1)
-                
             ),
                 
             conditionalPanel(
@@ -46,12 +46,12 @@ ui <- fluidPage(
                 sliderInput("size", "Select the sample size using the slider or enter the value in the textbox",min = 5,max = 10000,value = NULL,step = 1),
                 textInput('txt',label = NULL,value=5),
                 actionButton("simulate", "Simulate!"),
-                actionButton("clear", "Clear"))
-            
+                actionButton("clear", "Clear")
+                )
         ),
             # Show a plot of the generated distribution
             mainPanel(
-                plotlyOutput("linePlot")
+                withSpinner(plotlyOutput("linePlot")) 
             )
         )
     )
@@ -62,8 +62,7 @@ server <- function(input, output,session) {
     observeEvent(input$txt, {
         print(input$txt)
         if ((as.numeric(input$txt) != input$size) & input$txt != "" &  input$size != "") {
-                updateSliderInput(session = session, inputId = 'size',value = input$txt
-                                  )
+                updateSliderInput(session = session, inputId = 'size',value = input$txt)
         } else {
             if (input$txt == "") {
                 updateSliderInput(session = session,inputId = 'size',value = 5)
@@ -73,8 +72,7 @@ server <- function(input, output,session) {
 
     observeEvent(input$size, {
         if ((as.numeric(input$txt) != input$size) & input$size != "" & input$txt != "") {
-            updateTextInput(session = session,inputId = 'txt',value = input$size
-            )
+            updateTextInput(session = session,inputId = 'txt',value = input$size)
         }
     })
     
